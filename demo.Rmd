@@ -1,0 +1,167 @@
+---
+title: "demo"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+token.bytom = read.table(file = "C:/Users/vinyas/Desktop/stats/Ethereum_token/networkbytomTX.txt", header = F, sep = " ")
+token.rep = read.table(file = "C:/Users/vinyas/Desktop/stats/Ethereum_token/networkrepTX.txt", header = F, sep = " ")
+token.reputation = read.table(file = "C:/Users/vinyas/Desktop/stats/Ethereum_token/networkreputationTX.txt", header = F, sep = " ")
+
+
+#outliers
+
+outlier.bytom <- token.bytom [which (token.bytom$V4 >= 1.407e+17), ]
+outlier.rep <- token.rep [which (token.rep$V4>=1.1e+25), ]
+outlier.reputation <- token.reputation [which (token.reputation$V4 >= 1.1e+25), ]
+
+
+
+#outliers print
+outlier.bytom
+outlier.rep
+outlier.reputation
+
+
+
+#filternig the outliers
+
+
+filtered.bytom  <- token.bytom [which (token.bytom$V4 <=1.407e+17), ]
+filtered.rep <- token.rep [which (token.rep $V4 <= 1.1e+25), ]
+filtered.reputation   <- token.reputation [which (token.reputation$V4 <= 1.1e+25), ]
+
+
+#print filtered
+filtered.bytom
+filtered.rep
+filtered.reputation 
+
+## Counting the no. of buys for each user
+
+buys.distribution.bytom  <- filtered.bytom %>% group_by(filtered.bytom[, 2]) %>% summarise(n = n()) %>% ungroup
+
+buys.distribution.rep <- filtered.rep %>% group_by(filtered.rep[, 2]) %>% summarise(n = n()) %>% ungroup
+
+buys.distribution.reputation   <- filtered.reputation %>% group_by(filtered.reputation[, 2]) %>% summarise(n = n()) %>% ungroup
+
+
+
+
+#into single dimension array
+buytoken<-c(filtered.bytom[,1:2])
+buytoken2<-c(filtered.rep[,1:2])
+buytoken3<-c(filtered.reputation[,1:2])
+
+
+
+#gives frequency
+count<-as.data.frame(table(unlist(buytoken)))
+count2<-as.data.frame(table(unlist(buytoken2)))
+count3<-as.data.frame(table(unlist(buytoken3)))
+
+
+#rename column names
+colnames(count)<-c("userId","Frequency")
+
+
+
+names(buys.distribution.bytom) <- c("userId","Frequency")
+
+#doublecountofbuy<-as.data.frame(table(count$Frequency))
+#colnames(doublecountofbuy)<-c("count_buy","count_user")
+
+
+#fit.exp.buy <- fitdist(buys.distribution.bytom$Frequency, 'exp')
+#plot(buys.distribution.bytom$Frequency,fit.exp.buy)
+
+
+df1 <- as.data.frame(cbind(filtered.bytom$V1, filtered.bytom$V2))
+df2 <- as.data.frame(cbind(filtered.rep$V1, filtered.rep$V2))
+df3 <- as.data.frame(cbind(filtered.reputation$V1, filtered.reputation$V2))
+
+
+counts1 <- ddply(df1,.(df1$V1,df1$V2),nrow)
+counts1$ID <- c(1:nrow(counts1))
+
+
+
+counts2 <- ddply(df2,.(df2$V1,df2$V2),nrow)
+counts2$ID <- c(1:nrow(counts2))
+
+counts3 <- ddply(df3,.(df3$V1,df3$V2),nrow)
+counts3$ID <- c(1:nrow(counts3))
+
+#counts1$V2 <- NULL
+
+head(counts1)
+
+x <- data.frame(counts1$ID, counts1$V1)
+y <- data.frame(counts2$ID, counts2$V1)
+z <- data.frame(counts3$ID, counts3$V1)
+
+head(x) 
+
+names(x) <- c("pairID", "pairCount")
+
+names(y) <- c("pairID", "pairCount")
+
+names(z) <- c("pairID", "pairCount")
+
+head(x)
+
+
+count_pairs <- table(x$pairCount)
+count_pairs2 <- table(y$pairCount)
+count_pairs3 <- table(z$pairCount)
+
+head(count_pairs)
+
+
+count_pairs_vector <- as.vector(count_pairs)
+
+count_pairs_vector2 <- as.vector(count_pairs2)
+
+count_pairs_vector3 <- as.vector(count_pairs3)
+
+head(count_pairs)
+
+
+N.pos <- fitdist(count_pairs_vector, distr = "pois")
+N.pos2 <- fitdist(count_pairs_vector2, distr = "pois")
+N.pos3 <- fitdist(count_pairs_vector3, distr = "pois")
+
+plot(N.pos)
+plot(N.pos2)
+plot(N.pos3)
+
+summary(N.pos)
+
+N.nbinom<-fitdist(count_pairs_vector, distr = "nbinom")
+plot(N.nbinom)
+summary(N.nbinom)
